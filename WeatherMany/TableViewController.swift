@@ -20,6 +20,7 @@ struct WeatherDataType {
     var wind : [String]
     var imageUrl : [String]
     var startTime : [String]
+    var date: [String]
 }
 
 extension UIImageView {
@@ -108,9 +109,8 @@ class WeatherTableViewCell: UITableViewCell {
     
     @IBOutlet weak var Image16: UIImageView!
     
+    @IBOutlet weak var dateLabel: UILabel!
 }
-
-
 
 class TableViewController: UITableViewController, CLLocationManagerDelegate {
 
@@ -124,9 +124,34 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     
     var howManyRowsAreThere : Int = 0
     
+    var setOfSixIndex : Int = 0
+    var setOfSixIndexMultiplied : Int = 0
+    
     func refreshLocations() {
 
     }
+    
+    @IBAction func prevButtonPressed(_ sender: UIBarButtonItem) {
+        setOfSixIndex -= 1
+        if setOfSixIndex < 0 {
+            setOfSixIndex = 0
+        }
+        setOfSixIndexMultiplied = setOfSixIndex * 6
+        print (setOfSixIndexMultiplied)
+        myTableView.reloadData()
+    }
+    
+    @IBAction func nextButton(_ sender: UIBarButtonItem) {
+        setOfSixIndex += 1
+        if setOfSixIndex > 25 {
+            setOfSixIndex = 25
+        }
+        setOfSixIndexMultiplied = setOfSixIndex * 6
+        print (setOfSixIndexMultiplied)
+        myTableView.reloadData()
+    }
+    
+    
     @IBAction func refreshScreenPressed(_ sender: UIBarButtonItem) {
         locationManager.delegate = self // i.e. curret class WeatherViewController
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
@@ -152,7 +177,11 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         let myIntString : String = String(myInt)
         let myIntMinus12String : String = String(myInt - 12)
         if myInt > 11 {
-            return myIntMinus12String + "pm"
+            if myInt == 12 {
+                return "12pm"
+            } else {
+                return myIntMinus12String + "pm"
+            }
         }
         else if myInt == 0 {
             return "12am"
@@ -160,6 +189,12 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         else {
             return myIntString + "am"
         }
+    }
+    
+    func returnDateFromString(from: Int, to: Int, myString: String) -> String {
+        //let my
+        let myString = String(myString[from - 1..<to - 1])
+        return myString
     }
     
     override func viewDidLoad() {
@@ -187,38 +222,39 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
             cell.backgroundColor = UIColor(red:1, green:1, blue:1, alpha:1.0)
         }
 
-        cell.cityLabel?.text = myWeatherData.city
         if myWeatherData.temperature.count > 0 {
-            cell.Label21?.text = String(myWeatherData.temperature[0]) + "\r\n" + String(myWeatherData.startTime[0])
-            cell.Label22?.text = String(myWeatherData.temperature[1]) + "\r\n" + String(myWeatherData.startTime[1])
-            cell.Label23?.text = String(myWeatherData.temperature[2]) + "\r\n" + String(myWeatherData.startTime[2])
-            cell.Label24?.text = String(myWeatherData.temperature[3]) + "\r\n" + String(myWeatherData.startTime[3])
-            cell.Label25?.text = String(myWeatherData.temperature[4]) + "\r\n" + String(myWeatherData.startTime[4])
-            cell.Label26?.text = String(myWeatherData.temperature[5]) + "\r\n" + String(myWeatherData.startTime[5])
+            cell.cityLabel?.text = myWeatherData.city
+            cell.dateLabel?.text = String(myWeatherData.date[0 + setOfSixIndexMultiplied])
+            cell.Label21?.text = String(myWeatherData.temperature[0 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[0 + setOfSixIndexMultiplied])
+            cell.Label22?.text = String(myWeatherData.temperature[1 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[1 + setOfSixIndexMultiplied])
+            cell.Label23?.text = String(myWeatherData.temperature[2 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[2 + setOfSixIndexMultiplied])
+            cell.Label24?.text = String(myWeatherData.temperature[3 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[3 + setOfSixIndexMultiplied])
+            cell.Label25?.text = String(myWeatherData.temperature[4 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[4 + setOfSixIndexMultiplied])
+            cell.Label26?.text = String(myWeatherData.temperature[5 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[5 + setOfSixIndexMultiplied])
         }
         if myWeatherData.condition.count > 0 {
-            cell.Label31?.text = myWeatherData.condition[0]
-            cell.Label32?.text = myWeatherData.condition[1]
-            cell.Label33?.text = myWeatherData.condition[2]
-            cell.Label34?.text = myWeatherData.condition[3]
-            cell.Label35?.text = myWeatherData.condition[4]
-            cell.Label36?.text = myWeatherData.condition[5]
+            cell.Label31?.text = myWeatherData.condition[0 + setOfSixIndexMultiplied]
+            cell.Label32?.text = myWeatherData.condition[1 + setOfSixIndexMultiplied]
+            cell.Label33?.text = myWeatherData.condition[2 + setOfSixIndexMultiplied]
+            cell.Label34?.text = myWeatherData.condition[3 + setOfSixIndexMultiplied]
+            cell.Label35?.text = myWeatherData.condition[4 + setOfSixIndexMultiplied]
+            cell.Label36?.text = myWeatherData.condition[5 + setOfSixIndexMultiplied]
         }
         if myWeatherData.wind.count > 0 {
-            cell.Label41?.text = myWeatherData.wind[0].replacingOccurrences(of: "mph", with: "")
-            cell.Label42?.text = myWeatherData.wind[1].replacingOccurrences(of: "mph", with: "")
-            cell.Label43?.text = myWeatherData.wind[2].replacingOccurrences(of: "mph", with: "")
-            cell.Label44?.text = myWeatherData.wind[3].replacingOccurrences(of: "mph", with: "")
-            cell.Label45?.text = myWeatherData.wind[4].replacingOccurrences(of: "mph", with: "")
-            cell.Label46?.text = myWeatherData.wind[5].replacingOccurrences(of: "mph", with: "")
+            cell.Label41?.text = myWeatherData.wind[0 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
+            cell.Label42?.text = myWeatherData.wind[1 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
+            cell.Label43?.text = myWeatherData.wind[2 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
+            cell.Label44?.text = myWeatherData.wind[3 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
+            cell.Label45?.text = myWeatherData.wind[4 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
+            cell.Label46?.text = myWeatherData.wind[5 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
         }
         if myWeatherData.imageUrl.count > 0 {
-            cell.Image11?.downloaded(from: myWeatherData.imageUrl[0])
-            cell.Image12?.downloaded(from: myWeatherData.imageUrl[1])
-            cell.Image13?.downloaded(from: myWeatherData.imageUrl[2])
-            cell.Image14?.downloaded(from: myWeatherData.imageUrl[3])
-            cell.Image15?.downloaded(from: myWeatherData.imageUrl[4])
-            cell.Image16?.downloaded(from: myWeatherData.imageUrl[5])
+            cell.Image11?.downloaded(from: myWeatherData.imageUrl[0 + setOfSixIndexMultiplied])
+            cell.Image12?.downloaded(from: myWeatherData.imageUrl[1 + setOfSixIndexMultiplied])
+            cell.Image13?.downloaded(from: myWeatherData.imageUrl[2 + setOfSixIndexMultiplied])
+            cell.Image14?.downloaded(from: myWeatherData.imageUrl[3 + setOfSixIndexMultiplied])
+            cell.Image15?.downloaded(from: myWeatherData.imageUrl[4 + setOfSixIndexMultiplied])
+            cell.Image16?.downloaded(from: myWeatherData.imageUrl[5 + setOfSixIndexMultiplied])
         }
         return cell
     }
@@ -271,8 +307,10 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
                 weatherArray[index].condition.append(myResult["shortForecast"].string ?? "")
                 weatherArray[index].wind.append((myResult["windSpeed"].string ?? " ") + (myResult["windDirection"].string ?? " "))
                 weatherArray[index].imageUrl.append(myResult["icon"].string ?? "")
-                let myString : String = myResult["startTime"].string ?? ""
-                weatherArray[index].startTime.append(returnTimeFromString(from: 12, to: 14, myString: myString))
+                let myHourString : String = myResult["startTime"].string ?? ""
+                let myDateString : String = myHourString
+                weatherArray[index].startTime.append(returnTimeFromString(from: 12, to: 14, myString: myHourString))
+                weatherArray[index].date.append(returnDateFromString(from: 6, to: 11, myString: myDateString))
             }
             howManyRowsAreThere = weatherArray.count
             myTableView.reloadData()
@@ -284,13 +322,13 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     
     func resetWeatherData() {
         self.weatherArray.removeAll()
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
     }
 
     //Write the userEnteredANewCityName Delegate method here:
