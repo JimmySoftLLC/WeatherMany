@@ -10,16 +10,51 @@ import UIKit
 import CoreLocation
 import Alamofire
 import SwiftyJSON
+import AlamofireImage
 
 struct WeatherDataType {
-    
     var id : Int
     var city : String
     var temperature : [Int]
     var condition : [String]
     var wind : [String]
-    
+    var imageUrl : [String]
+    var startTime : [String]
 }
+
+extension UIImageView {
+    func downloaded(from url: URL, contentMode mode: UIView.ContentMode = .scaleAspectFit) {  // for swift 4.2 syntax just use ===> mode: UIView.ContentMode
+        contentMode = mode
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard
+                let httpURLResponse = response as? HTTPURLResponse, httpURLResponse.statusCode == 200,
+                let mimeType = response?.mimeType, mimeType.hasPrefix("image"),
+                let data = data, error == nil,
+                let image = UIImage(data: data)
+                else { return }
+            DispatchQueue.main.async() {
+                self.image = image
+            }
+            }.resume()
+    }
+    func downloaded(from link: String, contentMode mode: UIView.ContentMode = .scaleAspectFit) {  // for swift 4.2 syntax just use ===> mode: UIView.ContentMode
+        guard let url = URL(string: link) else { return }
+        downloaded(from: url, contentMode: mode)
+    }
+}
+
+extension String {
+    subscript(_ range: CountableRange<Int>) -> String {
+        let idx1 = index(startIndex, offsetBy: max(0, range.lowerBound))
+        let idx2 = index(startIndex, offsetBy: min(self.count, range.upperBound))
+        return String(self[idx1..<idx2])
+    }
+    //let s = "hello"
+    //s[0..<3] // "hel"
+    //s[3..<s.count] // "lo"
+}
+
+
 
 class WeatherTableViewCell: UITableViewCell {
     
@@ -61,6 +96,18 @@ class WeatherTableViewCell: UITableViewCell {
     
     @IBOutlet weak var Label46: UILabel!
     
+    @IBOutlet weak var Image11: UIImageView!
+    
+    @IBOutlet weak var Image12: UIImageView!
+    
+    @IBOutlet weak var Image13: UIImageView!
+    
+    @IBOutlet weak var Image14: UIImageView!
+    
+    @IBOutlet weak var Image15: UIImageView!
+    
+    @IBOutlet weak var Image16: UIImageView!
+    
 }
 
 
@@ -75,6 +122,46 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     
     var weatherArray : [WeatherDataType] = []
     
+    var howManyRowsAreThere : Int = 0
+    
+    func refreshLocations() {
+
+    }
+    @IBAction func refreshScreenPressed(_ sender: UIBarButtonItem) {
+        locationManager.delegate = self // i.e. curret class WeatherViewController
+        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
+    }
+    
+    func getImage(_ url:String,handler: @escaping (UIImage?)->Void) {
+        //print(url)
+        Alamofire.request(url, method: .get).responseImage { response in
+            if let data = response.result.value {
+                handler(data)
+            } else {
+                handler(nil)
+            }
+        }
+    }
+    
+    func returnTimeFromString(from: Int, to: Int, myString: String) -> String {
+        //let my
+        let myString = String(myString[from - 1..<to - 1])
+        let myInt : Int = Int(myString)!
+        let myIntString : String = String(myInt)
+        let myIntMinus12String : String = String(myInt - 12)
+        if myInt > 11 {
+            return myIntMinus12String + "pm"
+        }
+        else if myInt == 0 {
+            return "12am"
+        }
+        else {
+            return myIntString + "am"
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         locationManager.delegate = self // i.e. curret class WeatherViewController
@@ -83,112 +170,139 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         locationManager.startUpdatingLocation()
     }
 
-    
     @IBOutlet var myTableView: UITableView!
     
-    // MARK: - Table view data source
-
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return weatherArray.count
+        return howManyRowsAreThere
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "myWeatherTableViewCell", for: indexPath) as! WeatherTableViewCell
-        
         let myWeatherData = weatherArray[indexPath.row]
+        if indexPath.row % 2 == 0 {
+            //even Number
+            cell.backgroundColor = UIColor(red:0.9, green:0.9, blue:0.9, alpha:1.0)
+        } else {
+            // Odd number
+            cell.backgroundColor = UIColor(red:1, green:1, blue:1, alpha:1.0)
+        }
+
         cell.cityLabel?.text = myWeatherData.city
-        cell.Label21?.text = String(myWeatherData.temperature[0])
-        cell.Label22?.text = String(myWeatherData.temperature[1])
-        cell.Label23?.text = String(myWeatherData.temperature[2])
-        cell.Label24?.text = String(myWeatherData.temperature[3])
-        cell.Label25?.text = String(myWeatherData.temperature[4])
-        cell.Label26?.text = String(myWeatherData.temperature[5])
-        cell.Label31?.text = myWeatherData.condition[0]
-        cell.Label32?.text = myWeatherData.condition[1]
-        cell.Label33?.text = myWeatherData.condition[2]
-        cell.Label34?.text = myWeatherData.condition[3]
-        cell.Label35?.text = myWeatherData.condition[4]
-        cell.Label36?.text = myWeatherData.condition[5]
-        cell.Label41?.text = myWeatherData.wind[0].replacingOccurrences(of: "mph", with: "")
-        cell.Label42?.text = myWeatherData.wind[1].replacingOccurrences(of: "mph", with: "")
-        cell.Label43?.text = myWeatherData.wind[2].replacingOccurrences(of: "mph", with: "")
-        cell.Label44?.text = myWeatherData.wind[3].replacingOccurrences(of: "mph", with: "")
-        cell.Label45?.text = myWeatherData.wind[4].replacingOccurrences(of: "mph", with: "")
-        cell.Label46?.text = myWeatherData.wind[5].replacingOccurrences(of: "mph", with: "")
+        if myWeatherData.temperature.count > 0 {
+            cell.Label21?.text = String(myWeatherData.temperature[0]) + "\r\n" + String(myWeatherData.startTime[0])
+            cell.Label22?.text = String(myWeatherData.temperature[1]) + "\r\n" + String(myWeatherData.startTime[1])
+            cell.Label23?.text = String(myWeatherData.temperature[2]) + "\r\n" + String(myWeatherData.startTime[2])
+            cell.Label24?.text = String(myWeatherData.temperature[3]) + "\r\n" + String(myWeatherData.startTime[3])
+            cell.Label25?.text = String(myWeatherData.temperature[4]) + "\r\n" + String(myWeatherData.startTime[4])
+            cell.Label26?.text = String(myWeatherData.temperature[5]) + "\r\n" + String(myWeatherData.startTime[5])
+        }
+        if myWeatherData.condition.count > 0 {
+            cell.Label31?.text = myWeatherData.condition[0]
+            cell.Label32?.text = myWeatherData.condition[1]
+            cell.Label33?.text = myWeatherData.condition[2]
+            cell.Label34?.text = myWeatherData.condition[3]
+            cell.Label35?.text = myWeatherData.condition[4]
+            cell.Label36?.text = myWeatherData.condition[5]
+        }
+        if myWeatherData.wind.count > 0 {
+            cell.Label41?.text = myWeatherData.wind[0].replacingOccurrences(of: "mph", with: "")
+            cell.Label42?.text = myWeatherData.wind[1].replacingOccurrences(of: "mph", with: "")
+            cell.Label43?.text = myWeatherData.wind[2].replacingOccurrences(of: "mph", with: "")
+            cell.Label44?.text = myWeatherData.wind[3].replacingOccurrences(of: "mph", with: "")
+            cell.Label45?.text = myWeatherData.wind[4].replacingOccurrences(of: "mph", with: "")
+            cell.Label46?.text = myWeatherData.wind[5].replacingOccurrences(of: "mph", with: "")
+        }
+        if myWeatherData.imageUrl.count > 0 {
+            cell.Image11?.downloaded(from: myWeatherData.imageUrl[0])
+            cell.Image12?.downloaded(from: myWeatherData.imageUrl[1])
+            cell.Image13?.downloaded(from: myWeatherData.imageUrl[2])
+            cell.Image14?.downloaded(from: myWeatherData.imageUrl[3])
+            cell.Image15?.downloaded(from: myWeatherData.imageUrl[4])
+            cell.Image16?.downloaded(from: myWeatherData.imageUrl[5])
+        }
         return cell
     }
     
     //getWeatherData method here:
-    func getWeatherData (url: String, long: Double, lat: Double) {
+    func getWeatherData (index: Int, url: String, long: Double, lat: Double) {
         let myUrl : String = url + String(lat) + "," + String(long)
-        print (myUrl)
+        //print (myUrl)
         Alamofire.request(myUrl, method: .get).responseJSON {
             response in  // this is a closure so declare self
             if response.result.isSuccess {
                 let weatherJSON : JSON = JSON(response.result.value!)
-                print(weatherJSON)
-                print(url + String(lat) + String(long))
-                self.weatherArray.removeAll()
-                self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: []))
+                //print(weatherJSON)
                 if let tempResult:String = weatherJSON["properties"]["relativeLocation"]["properties"]["city"].string{
                     print(tempResult)
-                    self.weatherArray[0].city = tempResult
+                    self.weatherArray[index].city = tempResult
                 }
                 if let tempResult:String = weatherJSON["properties"]["relativeLocation"]["properties"]["state"].string{
                     print(tempResult)
-                    self.weatherArray[0].city += ", " + tempResult
+                    self.weatherArray[index].city += ", " + tempResult
                 }
                 if let tempResult:String = weatherJSON["properties"]["forecastHourly"].string{
-                    print(tempResult)
+                    //print(tempResult)
                     Alamofire.request(tempResult, method: .get).responseJSON {
                         response in  // this is a closure so declare self
                         if response.result.isSuccess {
                             let weatherJSON : JSON = JSON(response.result.value!)
                             print(weatherJSON)
-                            print(url + String(lat) + String(long))
-                            self.updateWeatherData(json: weatherJSON)
-                            //self.updateUIWithWeatherData()
+                            //print(url + String(lat) + String(long))
+                            self.updateWeatherData(index: index, json: weatherJSON)
                         } else {
                             print ("Error \(String(describing: response.result.error))")
-                            //self.cityLabel.text = ("Error \(String(describing: response.result.error))")
                         }
                     }
                 }
             } else {
                 print ("Error \(String(describing: response.result.error))")
-                //self.cityLabel.text = ("Error \(String(describing: response.result.error))")
             }
         }
         
     }
     
-    func updateWeatherData(json : JSON) {
+    func updateWeatherData(index: Int,json : JSON) {
         if let tempResult:[JSON] = json["properties"]["periods"].arrayValue{ //swifty json make this notation easy, the if check if it can cast to double, if it is nil then the routine just does not run
             print(tempResult.count)
             for myResult in tempResult {
-                print(myResult["shortForecast"])
-                print(myResult["temperature"])
-                weatherArray[0].temperature.append(myResult["temperature"].intValue )
-                weatherArray[0].condition.append(myResult["shortForecast"].string ?? "")
-                weatherArray[0].wind.append((myResult["windSpeed"].string ?? " ") + (myResult["windDirection"].string ?? " "))
+                //print(myResult["shortForecast"])
+                //print(myResult["temperature"])
+                weatherArray[index].temperature.append(myResult["temperature"].intValue )
+                weatherArray[index].condition.append(myResult["shortForecast"].string ?? "")
+                weatherArray[index].wind.append((myResult["windSpeed"].string ?? " ") + (myResult["windDirection"].string ?? " "))
+                weatherArray[index].imageUrl.append(myResult["icon"].string ?? "")
+                let myString : String = myResult["startTime"].string ?? ""
+                weatherArray[index].startTime.append(returnTimeFromString(from: 12, to: 14, myString: myString))
             }
-            self.myTableView.reloadData()
+            howManyRowsAreThere = weatherArray.count
+            myTableView.reloadData()
         }
         else {
-            //cityLabel.text = "Dude I could not get stuff!"
+            print("Dude I could not get stuff!")
         }
+    }
+    
+    func resetWeatherData() {
+        self.weatherArray.removeAll()
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
+        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: []))
     }
 
     //Write the userEnteredANewCityName Delegate method here:
-    func userEnteredANewCityName(city: String){
+    func userEnteredANewCityName(index: Int, city: String){
         let geocoder = CLGeocoder()
         geocoder.geocodeAddressString(city) {
             placemarks, error in
             let placemark = placemarks?.first
             let lat1 = placemark?.location?.coordinate.latitude
             let lon1 = placemark?.location?.coordinate.longitude
-            print("Lat: \(String(describing: lat1)), Lon: \(String(describing: lon1))")
-            self.getWeatherData(url: self.WEATHER_URL,long:lon1 ?? 0,lat:lat1 ?? 0)
+            //print("Lat: \(String(describing: lat1)), Lon: \(String(describing: lon1))")
+            self.getWeatherData(index: index, url: self.WEATHER_URL,long:lon1 ?? 0,lat:lat1 ?? 0)
         }
     }
     
@@ -198,8 +312,15 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         if location.horizontalAccuracy > 0 {
             locationManager.stopUpdatingLocation()
             locationManager.delegate = nil
-            print("longitude =" + String(location.coordinate.longitude) + ", latitude =" + String(location.coordinate.latitude))
-            getWeatherData(url: WEATHER_URL,long: location.coordinate.longitude,lat: location.coordinate.latitude)
+            resetWeatherData()
+            //print("longitude =" + String(location.coordinate.longitude) + ", latitude =" + String(location.coordinate.latitude))
+            getWeatherData(index: 0, url: WEATHER_URL,long: location.coordinate.longitude,lat: location.coordinate.latitude)
+            userEnteredANewCityName(index: 1, city: "Ellendale DE")
+            userEnteredANewCityName(index: 2, city: "Denton MD")
+            userEnteredANewCityName(index: 3, city: "Grasonville MD")
+            userEnteredANewCityName(index: 4, city: "Annapolis MD")
+            userEnteredANewCityName(index: 5, city: "Arlington VA")
+            userEnteredANewCityName(index: 6, city: "Tappahannock VA")
         }
     }
     
