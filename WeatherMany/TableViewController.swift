@@ -264,8 +264,8 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         
         alert.addAction(UIAlertAction(title: "No", style: .default, handler: nil))
         alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
-            if self.currentRow < self.myTowns.count && self.currentRow >= 0 {
-                self.myTowns.remove(at: self.currentRow)
+            if self.currentRow < self.myTowns[self.currentCityCollection].towns.count && self.currentRow >= 0 {
+                self.myTowns[self.currentCityCollection].towns.remove(at: self.currentRow)
                 self.defaults.set(self.myTowns[self.currentCityCollection].towns, forKey: "Cities1")
                 self.refreshLocations()
             }
@@ -513,7 +513,7 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     //TODO:
     
     func removeAllTowns() {
-        myTowns.removeAll()
+        myTowns[currentCityCollection].towns.removeAll()
     }
 
     func userEnteredANewCityName(index: Int, city: String){
