@@ -23,8 +23,12 @@ struct WeatherDataType {
     var date: [String]
 }
 
+///////////////////////////////////////////
+//MARK: - extendingcapablity of UIImageView and String
+//TODO: there must be some string libraries that should be used instead of writing your own routine.
+
 extension UIImageView {
-    func downloaded(from url: URL, contentMode mode: UIView.ContentMode = .scaleAspectFit) {  // for swift 4.2 syntax just use ===> mode: UIView.ContentMode
+    func downloaded(from url: URL, contentMode mode: UIView.ContentMode = .scaleAspectFit) {
         contentMode = mode
         URLSession.shared.dataTask(with: url) { data, response, error in
             guard
@@ -50,12 +54,19 @@ extension String {
         let idx2 = index(startIndex, offsetBy: min(self.count, range.upperBound))
         return String(self[idx1..<idx2])
     }
-    //let s = "hello"
-    //s[0..<3] // "hel"
-    //s[3..<s.count] // "lo"
 }
 
+extension UIColor {
+    
+    static var defaultBlue: UIColor {
+        return UIButton(type: .system).tintColor
+    }
+    
+}
 
+///////////////////////////////////////////
+//MARK: - WeatherTableViewCell
+//TODO: Consider a nib file instead in the future
 
 class WeatherTableViewCell: UITableViewCell {
     
@@ -112,24 +123,70 @@ class WeatherTableViewCell: UITableViewCell {
     @IBOutlet weak var dateLabel: UILabel!
 }
 
+class ExtWeatherArray {
+    var weatherArray : [WeatherDataType] = []
+}
+
+class persitantDataTowns {
+    var towns : [String] = []
+}
+
 class TableViewController: UITableViewController, CLLocationManagerDelegate {
 
     //Constants
     let WEATHER_URL = "https://api.weather.gov/points/"
-    
-    //Declare instance variables here
     let locationManager = CLLocationManager()
+    let defaults = UserDefaults.standard
     
-    var weatherArray : [WeatherDataType] = []
+    //Variables
     
+    var myExtWeatherArray : [ExtWeatherArray] = []
+    var myTowns : [persitantDataTowns] = []
     var howManyRowsAreThere : Int = 0
-    
     var setOfSixIndex : Int = 0
     var setOfSixIndexMultiplied : Int = 0
+    var currentRow : Int = 0
+    var currentCityCollection : Int = 0
     
-    func refreshLocations() {
-
+    ///////////////////////////////////////////
+    //MARK: - View did load
+    //TODO:
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        for _ in 0..<4 {
+            let myweatherArrayInstance: ExtWeatherArray = ExtWeatherArray.init()
+            myExtWeatherArray.append(myweatherArrayInstance)
+            let myTownsInstance: persitantDataTowns = persitantDataTowns.init()
+            myTowns.append(myTownsInstance)
+        }
+    
+        if defaults.array(forKey: "Cities1") != nil {
+            myTowns[currentCityCollection].towns = defaults.array(forKey: "Cities1") as! [String]
+        }
+        defaults.set(myTowns[currentCityCollection].towns, forKey: "Cities1")
+        
+        if defaults.array(forKey: "Cities2") != nil {
+            myTowns[1].towns = defaults.array(forKey: "Cities2") as! [String]
+        }
+        defaults.set(myTowns[1].towns, forKey: "Cities2")
+        
+        if defaults.array(forKey: "Cities3") != nil {
+            myTowns[2].towns = defaults.array(forKey: "Cities3") as! [String]
+        }
+        defaults.set(myTowns[2].towns, forKey: "Cities3")
+        
+        currentCityCollection = defaults.integer(forKey: "currentCityCollection")
+        defaults.set(currentCityCollection, forKey: "currentCityCollection")
+        
+        updatePrevAndNextButtons()
+        
+        updateCityCollectionButton(myCollectionItem: currentCityCollection)
     }
+    
+    ///////////////////////////////////////////
+    //MARK: - Navbar Prev, Next buttons
+    //TODO:
     
     @IBAction func prevButtonPressed(_ sender: UIBarButtonItem) {
         setOfSixIndex -= 1
@@ -137,27 +194,139 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
             setOfSixIndex = 0
         }
         setOfSixIndexMultiplied = setOfSixIndex * 6
-        print (setOfSixIndexMultiplied)
+        updatePrevAndNextButtons()
         myTableView.reloadData()
     }
     
-    @IBAction func nextButton(_ sender: UIBarButtonItem) {
+    func updatePrevAndNextButtons() {
+        if setOfSixIndex == 25 {
+            nextButton.isEnabled = false
+        } else {
+            nextButton.isEnabled = true
+        }
+        if setOfSixIndex == 0 {
+            prevButton.isEnabled = false
+        } else {
+            prevButton.isEnabled = true
+        }
+    }
+    
+    @IBAction func nextButtonPressed(_ sender: UIBarButtonItem) {
         setOfSixIndex += 1
         if setOfSixIndex > 25 {
             setOfSixIndex = 25
         }
         setOfSixIndexMultiplied = setOfSixIndex * 6
-        print (setOfSixIndexMultiplied)
+        updatePrevAndNextButtons()
         myTableView.reloadData()
     }
     
+    @IBOutlet weak var prevButton: UIBarButtonItem!
+    
+    @IBOutlet weak var nextButton: UIBarButtonItem!
+    
+    ///////////////////////////////////////////
+    //MARK: - Toolbar add, delete, 1, 2, 3, Refresh Buttons
+    //TODO:
+    
+    @IBOutlet weak var addButton: UIBarButtonItem!
+    
+    @IBOutlet weak var trashButton: UIBarButtonItem!
+    
+    @IBOutlet weak var oneButton: UIBarButtonItem!
+    
+    @IBOutlet weak var twoButton: UIBarButtonItem!
+    
+    @IBOutlet weak var threeButton: UIBarButtonItem!
+    
+    @IBOutlet weak var refreshButton: UIBarButtonItem!
+    
+    @IBAction func addButtonPressed(_ sender: Any) {
+        let alert = UIAlertController(title: "Add location", message: "Enter a location name", preferredStyle: .alert)
+        
+        alert.addTextField { (textField) in
+            textField.text = ""
+        }
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak alert] (_) in
+            let textField = alert?.textFields![0] // Force unwrapping because we know it exists.
+            self.myTowns[self.currentCityCollection].towns.append(textField?.text ?? "")
+            self.defaults.set(self.myTowns[self.currentCityCollection].towns, forKey: "Cities1")
+            self.refreshLocations()
+        }))
+        
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    @IBAction func deleteButtonPressed(_ sender: UIBarButtonItem) {
+        
+        let alert = UIAlertController(title: "Do you want to delete this location", message: "Don't worry you can aways add it back later.", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "No", style: .default, handler: nil))
+        alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
+            if self.currentRow < self.myTowns.count && self.currentRow >= 0 {
+                self.myTowns.remove(at: self.currentRow)
+                self.defaults.set(self.myTowns[self.currentCityCollection].towns, forKey: "Cities1")
+                self.refreshLocations()
+            }
+        }))
+        
+        self.present(alert, animated: true)
+        
+    }
+    
+    @IBAction func oneButton(_ sender: UIBarButtonItem) {
+        updateCityCollectionButton(myCollectionItem: 0)
+    }
+    
+    @IBAction func twoButton(_ sender: UIBarButtonItem) {
+        updateCityCollectionButton(myCollectionItem: 1)
+    }
+    
+    @IBAction func threeButton(_ sender: UIBarButtonItem) {
+        updateCityCollectionButton(myCollectionItem: 2)
+    }
+    
+
+    func updateCityCollectionButton(myCollectionItem : Int) {
+        enableButtons(isEnabled: false)
+        currentCityCollection = myCollectionItem
+        switch currentCityCollection {
+        case 0:
+            oneButton.tintColor = UIColor.defaultBlue
+            twoButton.tintColor = UIColor.lightGray
+            threeButton.tintColor = UIColor.lightGray
+        case 1:
+            oneButton.tintColor = UIColor.lightGray
+            twoButton.tintColor = UIColor.defaultBlue
+            threeButton.tintColor = UIColor.lightGray
+        case 2:
+            oneButton.tintColor = UIColor.lightGray
+            twoButton.tintColor = UIColor.lightGray
+            threeButton.tintColor = UIColor.defaultBlue
+        default:
+            oneButton.tintColor = UIColor.defaultBlue
+            twoButton.tintColor = UIColor.lightGray
+            threeButton.tintColor = UIColor.lightGray
+        }
+        refreshLocations()
+    }
     
     @IBAction func refreshScreenPressed(_ sender: UIBarButtonItem) {
-        locationManager.delegate = self // i.e. curret class WeatherViewController
-        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.startUpdatingLocation()
+        refreshLocations()
     }
+    
+    func enableButtons(isEnabled : Bool) {
+        addButton.isEnabled = isEnabled
+        trashButton.isEnabled = isEnabled
+        oneButton.isEnabled = isEnabled
+        twoButton.isEnabled = isEnabled
+        threeButton.isEnabled = isEnabled
+        refreshButton.isEnabled = isEnabled
+    }
+    ///////////////////////////////////////////
+    //MARK: - Formatting and fetching functions
+    //TODO:
     
     func getImage(_ url:String,handler: @escaping (UIImage?)->Void) {
         //print(url)
@@ -196,16 +365,25 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         let myString = String(myString[from - 1..<to - 1])
         return myString
     }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
+
+    func refreshLocations() {
         locationManager.delegate = self // i.e. curret class WeatherViewController
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
     }
-
+    
+    
+    ///////////////////////////////////////////
+    //MARK: - Table view outlet, functions
+    //TODO:
+    
     @IBOutlet var myTableView: UITableView!
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.currentRow = indexPath.row - 1
+        print("row: \(self.currentRow)")
+    }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return howManyRowsAreThere
@@ -213,7 +391,7 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "myWeatherTableViewCell", for: indexPath) as! WeatherTableViewCell
-        let myWeatherData = weatherArray[indexPath.row]
+        let myWeatherData = myExtWeatherArray[currentCityCollection].weatherArray[indexPath.row]
         if indexPath.row % 2 == 0 {
             //even Number
             cell.backgroundColor = UIColor(red:0.9, green:0.9, blue:0.9, alpha:1.0)
@@ -259,8 +437,11 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         return cell
     }
     
-    //getWeatherData method here:
-    func getWeatherData (index: Int, url: String, long: Double, lat: Double) {
+    ///////////////////////////////////////////
+    //MARK: - Weather Data functions
+    //TODO:
+    
+    func getWeatherDataFormUSGovAPI (index: Int, url: String, long: Double, lat: Double) {
         let myUrl : String = url + String(lat) + "," + String(long)
         //print (myUrl)
         Alamofire.request(myUrl, method: .get).responseJSON {
@@ -269,12 +450,12 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
                 let weatherJSON : JSON = JSON(response.result.value!)
                 //print(weatherJSON)
                 if let tempResult:String = weatherJSON["properties"]["relativeLocation"]["properties"]["city"].string{
-                    print(tempResult)
-                    self.weatherArray[index].city = tempResult
+                    //print(tempResult)
+                    self.myExtWeatherArray[self.currentCityCollection].weatherArray[index].city = tempResult
                 }
                 if let tempResult:String = weatherJSON["properties"]["relativeLocation"]["properties"]["state"].string{
-                    print(tempResult)
-                    self.weatherArray[index].city += ", " + tempResult
+                    //print(tempResult)
+                    self.myExtWeatherArray[self.currentCityCollection].weatherArray[index].city += ", " + tempResult
                 }
                 if let tempResult:String = weatherJSON["properties"]["forecastHourly"].string{
                     //print(tempResult)
@@ -282,9 +463,9 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
                         response in  // this is a closure so declare self
                         if response.result.isSuccess {
                             let weatherJSON : JSON = JSON(response.result.value!)
-                            print(weatherJSON)
+                            //print(weatherJSON)
                             //print(url + String(lat) + String(long))
-                            self.updateWeatherData(index: index, json: weatherJSON)
+                            self.updateWeatherDataObject(index: index, json: weatherJSON)
                         } else {
                             print ("Error \(String(describing: response.result.error))")
                         }
@@ -297,22 +478,22 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         
     }
     
-    func updateWeatherData(index: Int,json : JSON) {
+    func updateWeatherDataObject(index: Int,json : JSON) {
         if let tempResult:[JSON] = json["properties"]["periods"].arrayValue{ //swifty json make this notation easy, the if check if it can cast to double, if it is nil then the routine just does not run
-            print(tempResult.count)
+            //print(tempResult.count)
             for myResult in tempResult {
                 //print(myResult["shortForecast"])
                 //print(myResult["temperature"])
-                weatherArray[index].temperature.append(myResult["temperature"].intValue )
-                weatherArray[index].condition.append(myResult["shortForecast"].string ?? "")
-                weatherArray[index].wind.append((myResult["windSpeed"].string ?? " ") + (myResult["windDirection"].string ?? " "))
-                weatherArray[index].imageUrl.append(myResult["icon"].string ?? "")
+                myExtWeatherArray[currentCityCollection].weatherArray[index].temperature.append(myResult["temperature"].intValue )
+                myExtWeatherArray[currentCityCollection].weatherArray[index].condition.append(myResult["shortForecast"].string ?? "")
+                myExtWeatherArray[currentCityCollection].weatherArray[index].wind.append((myResult["windSpeed"].string ?? " ") + (myResult["windDirection"].string ?? " "))
+                myExtWeatherArray[currentCityCollection].weatherArray[index].imageUrl.append(myResult["icon"].string ?? "")
                 let myHourString : String = myResult["startTime"].string ?? ""
                 let myDateString : String = myHourString
-                weatherArray[index].startTime.append(returnTimeFromString(from: 12, to: 14, myString: myHourString))
-                weatherArray[index].date.append(returnDateFromString(from: 6, to: 11, myString: myDateString))
+            myExtWeatherArray[currentCityCollection].weatherArray[index].startTime.append(returnTimeFromString(from: 12, to: 14, myString: myHourString))
+                myExtWeatherArray[currentCityCollection].weatherArray[index].date.append(returnDateFromString(from: 6, to: 11, myString: myDateString))
             }
-            howManyRowsAreThere = weatherArray.count
+            howManyRowsAreThere = myExtWeatherArray[currentCityCollection].weatherArray.count
             myTableView.reloadData()
         }
         else {
@@ -320,18 +501,21 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         }
     }
     
-    func resetWeatherData() {
-        self.weatherArray.removeAll()
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
-        self.weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
+    func resetWeatherDataObject(howMany: Int) {
+        myExtWeatherArray[currentCityCollection].weatherArray.removeAll()
+        for _ in 0..<howMany+1 {
+            myExtWeatherArray[currentCityCollection].weatherArray.append(WeatherDataType(id: 0, city: "", temperature: [], condition: [], wind: [], imageUrl: [], startTime: [], date:[]))
+        }
+    }
+    
+    ///////////////////////////////////////////
+    //MARK: - Current location functions
+    //TODO:
+    
+    func removeAllTowns() {
+        myTowns.removeAll()
     }
 
-    //Write the userEnteredANewCityName Delegate method here:
     func userEnteredANewCityName(index: Int, city: String){
         let geocoder = CLGeocoder()
         geocoder.geocodeAddressString(city) {
@@ -340,38 +524,32 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
             let lat1 = placemark?.location?.coordinate.latitude
             let lon1 = placemark?.location?.coordinate.longitude
             //print("Lat: \(String(describing: lat1)), Lon: \(String(describing: lon1))")
-            self.getWeatherData(index: index, url: self.WEATHER_URL,long:lon1 ?? 0,lat:lat1 ?? 0)
+            self.getWeatherDataFormUSGovAPI(index: index, url: self.WEATHER_URL,long:lon1 ?? 0,lat:lat1 ?? 0)
         }
     }
     
-    //Write the didUpdateLocations method here: this is what method that gets activate one found location
+    ///////////////////////////////////////////
+    //MARK: - Current location functions
+    //TODO:
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let location = locations[locations.count-1]
         if location.horizontalAccuracy > 0 {
             locationManager.stopUpdatingLocation()
             locationManager.delegate = nil
-            resetWeatherData()
+            resetWeatherDataObject(howMany : myTowns[currentCityCollection].towns.count)
             //print("longitude =" + String(location.coordinate.longitude) + ", latitude =" + String(location.coordinate.latitude))
-            getWeatherData(index: 0, url: WEATHER_URL,long: location.coordinate.longitude,lat: location.coordinate.latitude)
-            userEnteredANewCityName(index: 1, city: "Ellendale DE")
-            userEnteredANewCityName(index: 2, city: "Denton MD")
-            userEnteredANewCityName(index: 3, city: "Grasonville MD")
-            userEnteredANewCityName(index: 4, city: "Annapolis MD")
-            userEnteredANewCityName(index: 5, city: "Arlington VA")
-            userEnteredANewCityName(index: 6, city: "Tappahannock VA")
+            getWeatherDataFormUSGovAPI(index: 0, url: WEATHER_URL,long: location.coordinate.longitude,lat: location.coordinate.latitude)
+            for myIndex in 0..<myTowns[currentCityCollection].towns.count {
+                print(myIndex)
+                userEnteredANewCityName(index: myIndex + 1, city: myTowns[currentCityCollection].towns.self[myIndex])
+            }
+            enableButtons(isEnabled: true)
         }
     }
     
-    //Write the didFailWithError method here: this method get triggered if there was an emmrror
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
         //cityLabel.text = "Dude I don't know where you are"
-    }
-    
-    func updateUIWithWeatherData() {
-        //cityLabel.text = weatherDataModel.city
-        //temperatureLabel.text = String(weatherDataModel.temperature) + "°" // or "\(weatherDataModel.temperature)"
-        //weatherIcon.image = UIImage(named: weatherDataModel.weatherIconName)
     }
     
 }

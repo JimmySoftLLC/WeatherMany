@@ -256,12 +256,35 @@
                         </connections>
                     </tableView>
                     <toolbarItems>
-                        <barButtonItem systemItem="add" id="ogy-yM-84L"/>
-                        <barButtonItem systemItem="edit" id="GOG-fa-b46"/>
-                        <barButtonItem title="1" id="MRb-7t-4s9" userLabel="1"/>
-                        <barButtonItem title="2" id="IIf-ij-3sV"/>
-                        <barButtonItem title="3" id="dbe-xO-dJx"/>
-                        <barButtonItem title="4" id="eqZ-OD-qkf">
+                        <barButtonItem systemItem="add" id="ogy-yM-84L">
+                            <connections>
+                                <action selector="addButtonPressed:" destination="Kd3-dx-uH1" id="el1-Px-Duc"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem systemItem="trash" id="GOG-fa-b46">
+                            <connections>
+                                <action selector="deleteButtonPressed:" destination="Kd3-dx-uH1" id="Nv0-ih-0jM"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem title="1" id="MRb-7t-4s9" userLabel="One Button">
+                            <color key="tintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="oneButton:" destination="Kd3-dx-uH1" id="I2h-Yl-miU"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem title="2" id="IIf-ij-3sV">
+                            <color key="tintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="twoButton:" destination="Kd3-dx-uH1" id="TdM-JO-PCc"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem title="3" id="dbe-xO-dJx">
+                            <color key="tintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="threeButton:" destination="Kd3-dx-uH1" id="csE-Yx-NTb"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem title="Refresh" id="eqZ-OD-qkf">
                             <connections>
                                 <action selector="refreshScreenPressed:" destination="Kd3-dx-uH1" id="V7O-uv-bUn"/>
                             </connections>
@@ -275,13 +298,21 @@
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Next" id="tEv-w0-rb7">
                             <connections>
-                                <action selector="nextButton:" destination="Kd3-dx-uH1" id="nGB-a9-S2Q"/>
+                                <action selector="nextButtonPressed:" destination="Kd3-dx-uH1" id="oEw-cv-gOp"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
+                        <outlet property="addButton" destination="ogy-yM-84L" id="WWh-uc-bLA"/>
                         <outlet property="myTableView" destination="Xvm-ij-RAo" id="fXA-EI-3aA"/>
+                        <outlet property="nextButton" destination="tEv-w0-rb7" id="c7Y-Yc-bXk"/>
+                        <outlet property="oneButton" destination="MRb-7t-4s9" id="Syh-sQ-Bp8"/>
+                        <outlet property="prevButton" destination="MWj-uY-bqT" id="NXL-wC-zq9"/>
+                        <outlet property="refreshButton" destination="eqZ-OD-qkf" id="Cg4-68-Olg"/>
+                        <outlet property="threeButton" destination="dbe-xO-dJx" id="goa-Sd-pQ6"/>
+                        <outlet property="trashButton" destination="GOG-fa-b46" id="7vN-LC-Z2s"/>
+                        <outlet property="twoButton" destination="IIf-ij-3sV" id="VTS-Za-Ox8"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wWu-WR-gvE" userLabel="First Responder" sceneMemberID="firstResponder"/>
