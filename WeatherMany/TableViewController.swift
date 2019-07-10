@@ -171,28 +171,21 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         
         //Get the data from device storage
         currentCitiesGroup = defaults.integer(forKey: "CurrentCitiesGroup")
-        
         if defaults.array(forKey: "Cities1") != nil {
             groupsOfCities[0].cities = defaults.array(forKey: "Cities1") as! [String]
         }
-        
         if defaults.array(forKey: "Cities2") != nil {
             groupsOfCities[1].cities = defaults.array(forKey: "Cities2") as! [String]
         }
-        
         if defaults.array(forKey: "Cities3") != nil {
             groupsOfCities[2].cities = defaults.array(forKey: "Cities3") as! [String]
         }
         
         howManyCitiesAreThere = 0
         myTableView.reloadData()
-
         saveToDefaults()
-        
         updatePrevAndNextButtons()
-        
         updateCityCollectionButton(myCollectionItem: currentCitiesGroup)
-        
         refreshLocations()
     }
     
@@ -260,11 +253,9 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     
     @IBAction func addButtonPressed(_ sender: Any) {
         let alert = UIAlertController(title: "Add location", message: "Enter a location name", preferredStyle: .alert)
-        
         alert.addTextField { (textField) in
             textField.text = ""
         }
-        
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak alert] (_) in
             let textField = alert?.textFields![0] // Force unwrapping because we know it exists.
             self.groupsOfCities[self.currentCitiesGroup].cities.append(textField?.text ?? "")
@@ -273,14 +264,11 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
             self.refreshLocations()
             self.updateScreenNow()
         }))
-        
         self.present(alert, animated: true, completion: nil)
     }
     
     @IBAction func deleteButtonPressed(_ sender: UIBarButtonItem) {
-        
         let alert = UIAlertController(title: "Do you want to delete this location", message: "Don't worry you can aways add it back later.", preferredStyle: .alert)
-        
         alert.addAction(UIAlertAction(title: "No", style: .default, handler: nil))
         alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
             if self.currentSelectedRow < self.groupsOfCities[self.currentCitiesGroup].cities.count && self.currentSelectedRow >= 0 {
@@ -291,9 +279,7 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
                 self.updateScreenNow()
             }
         }))
-        
         self.present(alert, animated: true)
-        
     }
     
     @IBAction func oneButton(_ sender: UIBarButtonItem) {
@@ -344,6 +330,7 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         threeButton.isEnabled = isEnabled
         refreshButton.isEnabled = isEnabled
     }
+    
     ///////////////////////////////////////////
     //MARK: - Formatting and fetching functions
     //TODO:
@@ -403,15 +390,12 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     func updateScreenNow() {
         howManyCitiesAreThere = self.groupsOfCitiesWeatherData[self.currentCitiesGroup].citiesWeatherData.count
         myTableView.reloadData()
-        
         updatePrevAndNextButtons()
         enableButtons(isEnabled: true)
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-
         self.currentSelectedRow = indexPath.row - 1
-        print("row: \(self.currentSelectedRow)")
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -420,55 +404,55 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "myWeatherTableViewCell", for: indexPath) as! WeatherTableViewCell
-        let myWeatherData = groupsOfCitiesWeatherData[currentCitiesGroup].citiesWeatherData[indexPath.row]
-        if groupsOfCitiesWeatherData.count > 0 {
-            if groupsOfCitiesWeatherData[currentCitiesGroup].citiesWeatherData.count > 0 {
-                if indexPath.row % 2 == 0 {
-                    //even Number
-                    cell.backgroundColor = UIColor(red:0.9, green:0.9, blue:0.9, alpha:1.0)
-                } else {
-                    // Odd number
-                    cell.backgroundColor = UIColor(red:1, green:1, blue:1, alpha:1.0)
-                }
-                if myWeatherData.temperature.count > 0 {
-                    cell.cityLabel?.text = myWeatherData.city
-                    cell.dateLabel?.text = String(myWeatherData.date[0 + setOfSixIndexMultiplied])
-                    cell.alertLabel?.text = String(myWeatherData.alert)
-                    if myWeatherData.alert == "" {
-                        cell.accessoryType = UITableViewCell.AccessoryType.none
-                    }else{
-                        cell.accessoryType = UITableViewCell.AccessoryType.detailButton
+        if currentCitiesGroup < groupsOfCitiesWeatherData.count {
+            if indexPath.row < groupsOfCitiesWeatherData[currentCitiesGroup].citiesWeatherData.count {
+                let myWeatherData = groupsOfCitiesWeatherData[currentCitiesGroup].citiesWeatherData[indexPath.row]
+                    if indexPath.row % 2 == 0 {
+                        //even Number
+                        cell.backgroundColor = UIColor(red:0.9, green:0.9, blue:0.9, alpha:1.0)
+                    } else {
+                        // Odd number
+                        cell.backgroundColor = UIColor(red:1, green:1, blue:1, alpha:1.0)
                     }
-                    cell.Label21?.text = String(myWeatherData.temperature[0 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[0 + setOfSixIndexMultiplied])
-                    cell.Label22?.text = String(myWeatherData.temperature[1 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[1 + setOfSixIndexMultiplied])
-                    cell.Label23?.text = String(myWeatherData.temperature[2 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[2 + setOfSixIndexMultiplied])
-                    cell.Label24?.text = String(myWeatherData.temperature[3 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[3 + setOfSixIndexMultiplied])
-                    cell.Label25?.text = String(myWeatherData.temperature[4 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[4 + setOfSixIndexMultiplied])
-                    cell.Label26?.text = String(myWeatherData.temperature[5 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[5 + setOfSixIndexMultiplied])
-                }
-                if myWeatherData.condition.count > 0 {
-                    cell.Label31?.text = myWeatherData.condition[0 + setOfSixIndexMultiplied]
-                    cell.Label32?.text = myWeatherData.condition[1 + setOfSixIndexMultiplied]
-                    cell.Label33?.text = myWeatherData.condition[2 + setOfSixIndexMultiplied]
-                    cell.Label34?.text = myWeatherData.condition[3 + setOfSixIndexMultiplied]
-                    cell.Label35?.text = myWeatherData.condition[4 + setOfSixIndexMultiplied]
-                    cell.Label36?.text = myWeatherData.condition[5 + setOfSixIndexMultiplied]
-                }
-                if myWeatherData.wind.count > 0 {
-                    cell.Label41?.text = myWeatherData.wind[0 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
-                    cell.Label42?.text = myWeatherData.wind[1 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
-                    cell.Label43?.text = myWeatherData.wind[2 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
-                    cell.Label44?.text = myWeatherData.wind[3 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
-                    cell.Label45?.text = myWeatherData.wind[4 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
-                    cell.Label46?.text = myWeatherData.wind[5 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
-                }
-                if myWeatherData.imageUrl.count > 0 {
-                    cell.Image11?.downloaded(from: myWeatherData.imageUrl[0 + setOfSixIndexMultiplied])
-                    cell.Image12?.downloaded(from: myWeatherData.imageUrl[1 + setOfSixIndexMultiplied])
-                    cell.Image13?.downloaded(from: myWeatherData.imageUrl[2 + setOfSixIndexMultiplied])
-                    cell.Image14?.downloaded(from: myWeatherData.imageUrl[3 + setOfSixIndexMultiplied])
-                    cell.Image15?.downloaded(from: myWeatherData.imageUrl[4 + setOfSixIndexMultiplied])
-                    cell.Image16?.downloaded(from: myWeatherData.imageUrl[5 + setOfSixIndexMultiplied])
+                    if myWeatherData.temperature.count > 0 {
+                        cell.cityLabel?.text = myWeatherData.city
+                        cell.dateLabel?.text = String(myWeatherData.date[0 + setOfSixIndexMultiplied])
+                        cell.alertLabel?.text = String(myWeatherData.alert)
+                        if myWeatherData.alert == "" {
+                            cell.accessoryType = UITableViewCell.AccessoryType.none
+                        }else{
+                            cell.accessoryType = UITableViewCell.AccessoryType.detailButton
+                        }
+                        cell.Label21?.text = String(myWeatherData.temperature[0 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[0 + setOfSixIndexMultiplied])
+                        cell.Label22?.text = String(myWeatherData.temperature[1 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[1 + setOfSixIndexMultiplied])
+                        cell.Label23?.text = String(myWeatherData.temperature[2 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[2 + setOfSixIndexMultiplied])
+                        cell.Label24?.text = String(myWeatherData.temperature[3 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[3 + setOfSixIndexMultiplied])
+                        cell.Label25?.text = String(myWeatherData.temperature[4 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[4 + setOfSixIndexMultiplied])
+                        cell.Label26?.text = String(myWeatherData.temperature[5 + setOfSixIndexMultiplied]) + "\r\n" + String(myWeatherData.startTime[5 + setOfSixIndexMultiplied])
+                    }
+                    if myWeatherData.condition.count > 0 {
+                        cell.Label31?.text = myWeatherData.condition[0 + setOfSixIndexMultiplied]
+                        cell.Label32?.text = myWeatherData.condition[1 + setOfSixIndexMultiplied]
+                        cell.Label33?.text = myWeatherData.condition[2 + setOfSixIndexMultiplied]
+                        cell.Label34?.text = myWeatherData.condition[3 + setOfSixIndexMultiplied]
+                        cell.Label35?.text = myWeatherData.condition[4 + setOfSixIndexMultiplied]
+                        cell.Label36?.text = myWeatherData.condition[5 + setOfSixIndexMultiplied]
+                    }
+                    if myWeatherData.wind.count > 0 {
+                        cell.Label41?.text = myWeatherData.wind[0 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
+                        cell.Label42?.text = myWeatherData.wind[1 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
+                        cell.Label43?.text = myWeatherData.wind[2 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
+                        cell.Label44?.text = myWeatherData.wind[3 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
+                        cell.Label45?.text = myWeatherData.wind[4 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
+                        cell.Label46?.text = myWeatherData.wind[5 + setOfSixIndexMultiplied].replacingOccurrences(of: "mph", with: "")
+                    }
+                    if myWeatherData.imageUrl.count > 0 {
+                        cell.Image11?.downloaded(from: myWeatherData.imageUrl[0 + setOfSixIndexMultiplied])
+                        cell.Image12?.downloaded(from: myWeatherData.imageUrl[1 + setOfSixIndexMultiplied])
+                        cell.Image13?.downloaded(from: myWeatherData.imageUrl[2 + setOfSixIndexMultiplied])
+                        cell.Image14?.downloaded(from: myWeatherData.imageUrl[3 + setOfSixIndexMultiplied])
+                        cell.Image15?.downloaded(from: myWeatherData.imageUrl[4 + setOfSixIndexMultiplied])
+                        cell.Image16?.downloaded(from: myWeatherData.imageUrl[5 + setOfSixIndexMultiplied])
                 }
             }
         }
@@ -479,13 +463,13 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     }
     
     override func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
-        let alert = UIAlertController(title: "Alert Details", message: groupsOfCitiesWeatherData[currentCitiesGroup].citiesWeatherData[indexPath.row].alertDescription, preferredStyle: .alert)
-        
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        
-        self.present(alert, animated: true)
-    
-        print("Dude person")
+        if currentCitiesGroup < groupsOfCitiesWeatherData.count {
+            if indexPath.row < groupsOfCitiesWeatherData[currentCitiesGroup].citiesWeatherData.count {
+                let alert = UIAlertController(title: "Alert Details", message: groupsOfCitiesWeatherData[currentCitiesGroup].citiesWeatherData[indexPath.row].alertDescription, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alert, animated: true)
+            }
+        }
     }
     
     ///////////////////////////////////////////
@@ -505,7 +489,6 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
                 groupsOfCitiesWeatherData[myIndex].citiesWeatherData[myIndex2].alert = ""
             }
         }
-        
         for myIndex in 0..<groupsOfCitiesWeatherData.count{
             groupsOfCitiesWeatherData[myIndex].citiesWeatherData.removeAll()
             for _ in 0..<groupsOfCities[myIndex].cities.count + 1 {
@@ -515,31 +498,35 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     }
     
     func getWeatherDataFormUSGovAPI (groupOfCitiesIndex: Int, cityIndex: Int, url: String, long: Double, lat: Double) {
-        let myUrl : String = url + String(lat) + "," + String(long)
-        Alamofire.request(myUrl, method: .get).responseJSON {
-            response in
-            if response.result.isSuccess {
-                let weatherJSON : JSON = JSON(response.result.value!)
-                //print(weatherJSON)
-                if let tempResult:String = weatherJSON["properties"]["relativeLocation"]["properties"]["city"].string{
-                    self.groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].city = tempResult
-                }
-                if let tempResult:String = weatherJSON["properties"]["relativeLocation"]["properties"]["state"].string{
-                    self.groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].city += ", " + tempResult
-                }
-                if let tempResult:String = weatherJSON["properties"]["forecastHourly"].string{
-                    Alamofire.request(tempResult, method: .get).responseJSON {
-                        response in
-                        if response.result.isSuccess {
-                            let weatherJSON : JSON = JSON(response.result.value!)
-                            self.updateGroupsOfCitiesWeatherData(groupOfCitiesIndex: groupOfCitiesIndex, cityIndex: cityIndex, json: weatherJSON)
-                        } else {
-                            print ("Error \(String(describing: response.result.error))")
+        if groupOfCitiesIndex < groupsOfCitiesWeatherData.count {
+            if cityIndex < groupsOfCitiesWeatherData[currentCitiesGroup].citiesWeatherData.count {
+                let myUrl : String = url + String(lat) + "," + String(long)
+                Alamofire.request(myUrl, method: .get).responseJSON {
+                    response in
+                    if response.result.isSuccess {
+                        let weatherJSON : JSON = JSON(response.result.value!)
+                        //print(weatherJSON)
+                        if let tempResult:String = weatherJSON["properties"]["relativeLocation"]["properties"]["city"].string{
+                            self.groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].city = tempResult
                         }
+                        if let tempResult:String = weatherJSON["properties"]["relativeLocation"]["properties"]["state"].string{
+                            self.groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].city += ", " + tempResult
+                        }
+                        if let tempResult:String = weatherJSON["properties"]["forecastHourly"].string{
+                            Alamofire.request(tempResult, method: .get).responseJSON {
+                                response in
+                                if response.result.isSuccess {
+                                    let weatherJSON : JSON = JSON(response.result.value!)
+                                    self.updateGroupsOfCitiesWeatherData(groupOfCitiesIndex: groupOfCitiesIndex, cityIndex: cityIndex, json: weatherJSON)
+                                } else {
+                                    print ("Error \(String(describing: response.result.error))")
+                                }
+                            }
+                        }
+                    } else {
+                        print ("Error \(String(describing: response.result.error))")
                     }
                 }
-            } else {
-                print ("Error \(String(describing: response.result.error))")
             }
         }
     }
@@ -550,7 +537,7 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
             response in
             if response.result.isSuccess {
                 let weatherJSON : JSON = JSON(response.result.value!)
-                print(weatherJSON)
+                //print(weatherJSON)
                 self.updateGroupsOfCitiesAlertData(groupOfCitiesIndex: groupOfCitiesIndex, cityIndex: cityIndex, json: weatherJSON)
             } else {
                 print ("Error \(String(describing: response.result.error))")
@@ -560,17 +547,21 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     
     func updateGroupsOfCitiesWeatherData(groupOfCitiesIndex: Int, cityIndex: Int,json : JSON) {
         if let tempResult:[JSON] = json["properties"]["periods"].arrayValue{ //swifty json make this notation easy, the if check if it can cast to double, if it is nil then the routine just does not run
-            for myResult in tempResult {
-                groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].temperature.append(myResult["temperature"].intValue )
-                groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].condition.append(myResult["shortForecast"].string ?? "")
-                groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].wind.append((myResult["windSpeed"].string ?? " ") + (myResult["windDirection"].string ?? " "))
-                groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].imageUrl.append(myResult["icon"].string ?? "")
-                let myHourString : String = myResult["startTime"].string ?? ""
-                let myDateString : String = myHourString
-                groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].startTime.append(returnTimeFromString(from: 12, to: 14, myString: myHourString))
-                groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].date.append(returnDateFromString(from: 6, to: 11, myString: myDateString))
+            if groupOfCitiesIndex < groupsOfCitiesWeatherData.count {
+                if cityIndex < groupsOfCitiesWeatherData[currentCitiesGroup].citiesWeatherData.count {
+                    for myResult in tempResult {
+                        groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].temperature.append(myResult["temperature"].intValue )
+                        groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].condition.append(myResult["shortForecast"].string ?? "")
+                        groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].wind.append((myResult["windSpeed"].string ?? " ") + (myResult["windDirection"].string ?? " "))
+                        groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].imageUrl.append(myResult["icon"].string ?? "")
+                        let myHourString : String = myResult["startTime"].string ?? ""
+                        let myDateString : String = myHourString
+                        groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].startTime.append(returnTimeFromString(from: 12, to: 14, myString: myHourString))
+                        groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].date.append(returnDateFromString(from: 6, to: 11, myString: myDateString))
+                    }
+                    self.updateScreenNow()
+                }
             }
-            self.updateScreenNow()
         }
         else {
             print("Dude I could not get stuff!")
@@ -579,26 +570,29 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     
     func updateGroupsOfCitiesAlertData(groupOfCitiesIndex: Int, cityIndex: Int,json : JSON) {
         if let tempResult:[JSON] = json["features"].arrayValue{ //swifty json make this notation easy, the if check if it can cast to double, if it is nil then the routine just does not run
-            var myAlertString : String = ""
-            var myAlertDescriptionString : String = ""
-            var myCount : Int = 0
-            for myResult in tempResult {
-                if myCount > 0 {
-                    myAlertString += ", "
-                    myAlertDescriptionString += "\r\n\r\n"
-                }else{
-                    myAlertString += "Alert: "
-                    myAlertDescriptionString += "\r\n"
+            if groupOfCitiesIndex < groupsOfCitiesWeatherData.count {
+                if cityIndex < groupsOfCitiesWeatherData[currentCitiesGroup].citiesWeatherData.count {
+                    var myAlertString : String = ""
+                    var myAlertDescriptionString : String = ""
+                    var myCount : Int = 0
+                    for myResult in tempResult {
+                        if myCount > 0 {
+                            myAlertString += ", "
+                            myAlertDescriptionString += "\r\n\r\n"
+                        }else{
+                            myAlertString += "Alert: "
+                            myAlertDescriptionString += "\r\n"
+                        }
+                        myAlertString += (myResult["properties"]["event"].string ?? " ")
+                        myAlertDescriptionString += (myResult["properties"]["event"].string ?? " ")
+                        myAlertDescriptionString += "\r\n\r\n" + (myResult["properties"]["description"].string ?? " ")
+                        myCount += 1
+                        groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].alert = myAlertString
+                        groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].alertDescription = myAlertDescriptionString
+                    }
+                    self.updateScreenNow()
                 }
-                myAlertString += (myResult["properties"]["severity"].string ?? " ") + " " + (myResult["properties"]["event"].string ?? " ")
-                myAlertDescriptionString += (myResult["properties"]["severity"].string ?? " ")
-                myAlertDescriptionString += " " + (myResult["properties"]["event"].string ?? " ")
-                myAlertDescriptionString += "\r\n\r\n" + (myResult["properties"]["description"].string ?? " ")
-                myCount += 1
-                groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].alert = myAlertString
-                groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].alertDescription = myAlertDescriptionString
             }
-            self.updateScreenNow()
         }
         else {
             print("Dude I could not get stuff!")
@@ -637,8 +631,11 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
                 getAlertDataFormUSGovAPI(groupOfCitiesIndex: groupOfCitiesIndex, cityIndex: 0, url: ALERT_URL,long: location.coordinate.longitude,lat: location.coordinate.latitude)
                 //Add user locations
                 for cityIndex in 0..<groupsOfCities[groupOfCitiesIndex].cities.count {
-                    print(cityIndex)
-                    userEnteredANewCityName(groupOfCitiesIndex: groupOfCitiesIndex, cityIndex: cityIndex + 1, city: groupsOfCities[groupOfCitiesIndex].cities[cityIndex])
+                    if groupOfCitiesIndex < groupsOfCitiesWeatherData.count {
+                        if cityIndex < groupsOfCitiesWeatherData[currentCitiesGroup].citiesWeatherData.count {
+                            userEnteredANewCityName(groupOfCitiesIndex: groupOfCitiesIndex, cityIndex: cityIndex + 1, city: groupsOfCities[groupOfCitiesIndex].cities[cityIndex])
+                        }
+                    }
                 }
             }
         }
