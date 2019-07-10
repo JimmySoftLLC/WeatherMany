@@ -409,6 +409,7 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+
         self.currentSelectedRow = indexPath.row - 1
         print("row: \(self.currentSelectedRow)")
     }
@@ -471,6 +472,9 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
                 }
             }
         }
+        let cellBGView = UIView()
+        cellBGView.backgroundColor = UIColor(red:193/255, green:217/255, blue:247/255, alpha:1.0)
+        cell.selectedBackgroundView = cellBGView
         return cell
     }
     
