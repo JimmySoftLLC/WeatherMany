@@ -145,7 +145,6 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     let defaults = UserDefaults.standard
     
     //Variables
-    
     var groupsOfCitiesWeatherData : [GroupOfCitiesWeatherDataClass] = []
     var groupsOfCities : [GroupOfCitiesClass] = []
     var howManyCitiesAreThere : Int = 0
@@ -153,7 +152,7 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     var setOfSixIndexMultiplied : Int = 0
     var currentSelectedRow : Int = 0
     var currentCitiesGroup : Int = 0
-    let howManyGroupsToCreate : Int = 3
+    let howManyGroupsToCreate : Int = 5
     
     ///////////////////////////////////////////
     //MARK: - View did load
@@ -249,6 +248,10 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
     
     @IBOutlet weak var threeButton: UIBarButtonItem!
     
+    @IBOutlet weak var fourButton: UIBarButtonItem!
+    
+    @IBOutlet weak var fiveButton: UIBarButtonItem!
+    
     @IBOutlet weak var refreshButton: UIBarButtonItem!
     
     @IBAction func addButtonPressed(_ sender: Any) {
@@ -258,28 +261,39 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         }
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak alert] (_) in
             let textField = alert?.textFields![0] // Force unwrapping because we know it exists.
-            self.groupsOfCities[self.currentCitiesGroup].cities.append(textField?.text ?? "")
-            self.defaults.set(self.groupsOfCities[self.currentCitiesGroup].cities, forKey: "Cities1")
-            self.saveToDefaults()
-            self.refreshLocations()
-            self.updateScreenNow()
+            let mytext = textField?.text ?? ""
+            if mytext != "" {
+                self.groupsOfCities[self.currentCitiesGroup].cities.append(mytext)
+                self.defaults.set(self.groupsOfCities[self.currentCitiesGroup].cities, forKey: "Cities1")
+                self.saveToDefaults()
+                self.refreshLocations()
+                self.updateScreenNow()
+            }else{
+                let alertIfError = UIAlertController(title: "No location entered", message: "Enter a location and try again.", preferredStyle: .alert)
+                alertIfError.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alertIfError, animated: true)
+            }
         }))
         self.present(alert, animated: true, completion: nil)
     }
     
     @IBAction func deleteButtonPressed(_ sender: UIBarButtonItem) {
-        let alert = UIAlertController(title: "Do you want to delete this location", message: "Don't worry you can aways add it back later.", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "No", style: .default, handler: nil))
-        alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
-            if self.currentSelectedRow < self.groupsOfCities[self.currentCitiesGroup].cities.count && self.currentSelectedRow >= 0 {
+        if self.currentSelectedRow < self.groupsOfCities[self.currentCitiesGroup].cities.count && self.currentSelectedRow >= 0 {
+            let alert = UIAlertController(title: "Do you want to delete this location?", message: "You can add it back later if needed.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "No", style: .default, handler: nil))
+            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { action in
                 self.groupsOfCities[self.currentCitiesGroup].cities.remove(at: self.currentSelectedRow)
                 self.defaults.set(self.groupsOfCities[self.currentCitiesGroup].cities, forKey: "Cities1")
                 self.saveToDefaults()
                 self.refreshLocations()
                 self.updateScreenNow()
-            }
-        }))
-        self.present(alert, animated: true)
+            }))
+            self.present(alert, animated: true)
+        }else{
+            let alertIfError = UIAlertController(title: "Invalid row selected", message: "Select a row by clicking it first and try again. Note: You cannot delete the first row which is your current location.", preferredStyle: .alert)
+            alertIfError.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alertIfError, animated: true)
+        }
     }
     
     @IBAction func oneButton(_ sender: UIBarButtonItem) {
@@ -294,32 +308,62 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         updateCityCollectionButton(myCollectionItem: 2)
     }
     
-    func updateCityCollectionButton(myCollectionItem : Int) {
-        currentCitiesGroup = myCollectionItem
-        switch currentCitiesGroup {
-        case 0:
-            oneButton.tintColor = UIColor.defaultBlue
-            twoButton.tintColor = UIColor.lightGray
-            threeButton.tintColor = UIColor.lightGray
-        case 1:
-            oneButton.tintColor = UIColor.lightGray
-            twoButton.tintColor = UIColor.defaultBlue
-            threeButton.tintColor = UIColor.lightGray
-        case 2:
-            oneButton.tintColor = UIColor.lightGray
-            twoButton.tintColor = UIColor.lightGray
-            threeButton.tintColor = UIColor.defaultBlue
-        default:
-            oneButton.tintColor = UIColor.defaultBlue
-            twoButton.tintColor = UIColor.lightGray
-            threeButton.tintColor = UIColor.lightGray
-        }
-        saveToDefaults()
-        updateScreenNow()
+    @IBAction func fourButtonPressed(_ sender: Any) {
+        updateCityCollectionButton(myCollectionItem: 3)
+    }
+    
+    @IBAction func fiveButtonPressed(_ sender: Any) {
+        updateCityCollectionButton(myCollectionItem: 4)
     }
     
     @IBAction func refreshScreenPressed(_ sender: UIBarButtonItem) {
         refreshLocations()
+    }
+    
+    func updateCityCollectionButton(myCollectionItem : Int) {
+        currentCitiesGroup = myCollectionItem
+        let mySelectedColor : UIColor = UIColor.defaultBlue
+        let myUnSelectedColor : UIColor = UIColor.lightGray
+        switch currentCitiesGroup {
+        case 0:
+            oneButton.tintColor = mySelectedColor
+            twoButton.tintColor = myUnSelectedColor
+            threeButton.tintColor = myUnSelectedColor
+            fourButton.tintColor = myUnSelectedColor
+            fiveButton.tintColor = myUnSelectedColor
+        case 1:
+            oneButton.tintColor = myUnSelectedColor
+            twoButton.tintColor = mySelectedColor
+            threeButton.tintColor = myUnSelectedColor
+            fourButton.tintColor = myUnSelectedColor
+            fiveButton.tintColor = myUnSelectedColor
+        case 2:
+            oneButton.tintColor = myUnSelectedColor
+            twoButton.tintColor = myUnSelectedColor
+            threeButton.tintColor = mySelectedColor
+            fourButton.tintColor = myUnSelectedColor
+            fiveButton.tintColor = myUnSelectedColor
+        case 3:
+            oneButton.tintColor = myUnSelectedColor
+            twoButton.tintColor = myUnSelectedColor
+            threeButton.tintColor = myUnSelectedColor
+            fourButton.tintColor = mySelectedColor
+            fiveButton.tintColor = myUnSelectedColor
+        case 4:
+            oneButton.tintColor = myUnSelectedColor
+            twoButton.tintColor = myUnSelectedColor
+            threeButton.tintColor = myUnSelectedColor
+            fourButton.tintColor = myUnSelectedColor
+            fiveButton.tintColor = mySelectedColor
+        default:
+            oneButton.tintColor = mySelectedColor
+            twoButton.tintColor = myUnSelectedColor
+            threeButton.tintColor = myUnSelectedColor
+            fourButton.tintColor = myUnSelectedColor
+            fiveButton.tintColor = myUnSelectedColor
+        }
+        saveToDefaults()
+        updateScreenNow()
     }
     
     func enableButtons(isEnabled : Bool) {

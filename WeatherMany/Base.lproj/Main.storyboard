@@ -300,6 +300,16 @@
                                 <action selector="threeButton:" destination="Kd3-dx-uH1" id="csE-Yx-NTb"/>
                             </connections>
                         </barButtonItem>
+                        <barButtonItem title="4" id="GHv-r5-IhM">
+                            <connections>
+                                <action selector="fourButtonPressed:" destination="Kd3-dx-uH1" id="Xcx-WK-HXZ"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem title="5" id="4T0-tv-VTZ">
+                            <connections>
+                                <action selector="fiveButtonPressed:" destination="Kd3-dx-uH1" id="jqB-zU-XkX"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem title="Refresh" id="eqZ-OD-qkf">
                             <connections>
                                 <action selector="refreshScreenPressed:" destination="Kd3-dx-uH1" id="V7O-uv-bUn"/>
@@ -313,6 +323,7 @@
                             </connections>
                         </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Next" id="tEv-w0-rb7">
+                            <color key="tintColor" red="0.0" green="0.40848821148050424" blue="0.84688293147208116" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <connections>
                                 <action selector="nextButtonPressed:" destination="Kd3-dx-uH1" id="oEw-cv-gOp"/>
                             </connections>
@@ -321,6 +332,8 @@
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="addButton" destination="ogy-yM-84L" id="WWh-uc-bLA"/>
+                        <outlet property="fiveButton" destination="4T0-tv-VTZ" id="i4D-lY-UmK"/>
+                        <outlet property="fourButton" destination="GHv-r5-IhM" id="DAQ-20-Icv"/>
                         <outlet property="myTableView" destination="Xvm-ij-RAo" id="fXA-EI-3aA"/>
                         <outlet property="nextButton" destination="tEv-w0-rb7" id="c7Y-Yc-bXk"/>
                         <outlet property="oneButton" destination="MRb-7t-4s9" id="Syh-sQ-Bp8"/>
