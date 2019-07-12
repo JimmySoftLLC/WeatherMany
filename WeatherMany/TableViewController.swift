@@ -179,6 +179,12 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         if defaults.array(forKey: "Cities3") != nil {
             groupsOfCities[2].cities = defaults.array(forKey: "Cities3") as! [String]
         }
+        if defaults.array(forKey: "Cities4") != nil {
+            groupsOfCities[3].cities = defaults.array(forKey: "Cities4") as! [String]
+        }
+        if defaults.array(forKey: "Cities5") != nil {
+            groupsOfCities[4].cities = defaults.array(forKey: "Cities5") as! [String]
+        }
         
         howManyCitiesAreThere = 0
         myTableView.reloadData()
@@ -193,6 +199,8 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         defaults.set(groupsOfCities[0].cities, forKey: "Cities1")
         defaults.set(groupsOfCities[1].cities, forKey: "Cities2")
         defaults.set(groupsOfCities[2].cities, forKey: "Cities3")
+        defaults.set(groupsOfCities[3].cities, forKey: "Cities4")
+        defaults.set(groupsOfCities[4].cities, forKey: "Cities5")
     }
     
     ///////////////////////////////////////////
@@ -409,9 +417,41 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
         }
     }
     
-    func returnDateFromString(from: Int, to: Int, myString: String) -> String {
+    func returnMonthDayFromString(from: Int, to: Int, myString: String) -> String {
         let myString = String(myString[from - 1..<to - 1])
         return myString
+    }
+    
+    func returnDayFromString(from: Int, to: Int, myString: String) -> String {
+        let today = String(myString[from - 1..<to - 1])
+        let formatter  = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        if let todayDate = formatter.date(from: today) {
+            let myCalendar = NSCalendar(calendarIdentifier: NSCalendar.Identifier.gregorian)!
+            let myComponents = myCalendar.components(.weekday, from: todayDate)
+            let weekDay = myComponents.weekday
+            switch weekDay {
+            case 1:
+                return "Sun"
+            case 2:
+                return "Mon"
+            case 3:
+                return "Tue"
+            case 4:
+                return "Wed"
+            case 5:
+                return "Thu"
+            case 6:
+                return "Fri"
+            case 7:
+                return "Sat"
+            default:
+                print("Error fetching days")
+                return "Day"
+            }
+        } else {
+            return ""
+        }
     }
 
     func refreshLocations() {
@@ -601,7 +641,7 @@ class TableViewController: UITableViewController, CLLocationManagerDelegate {
                         let myHourString : String = myResult["startTime"].string ?? ""
                         let myDateString : String = myHourString
                         groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].startTime.append(returnTimeFromString(from: 12, to: 14, myString: myHourString))
-                        groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].date.append(returnDateFromString(from: 6, to: 11, myString: myDateString))
+                        groupsOfCitiesWeatherData[groupOfCitiesIndex].citiesWeatherData[cityIndex].date.append(returnDayFromString(from: 1, to: 11, myString: myDateString) + " " + returnMonthDayFromString(from: 6, to: 11, myString: myDateString))
                     }
                     self.updateScreenNow()
                 }
